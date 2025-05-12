@@ -6,6 +6,39 @@
     <title>RP Emergency Services MDT</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --agency-color: #00ff00;
+            --agency-code: "EMS";
+        }
+        
+        .agency-badge {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 10px;
+        }
+        
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .card-actions button {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        
+        .editing {
+            background-color: #444;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -21,10 +54,10 @@
         </header>
 
         <nav>
-            <button onclick="toggleSection('citizens')">Citizens</button>
-            <button onclick="toggleSection('vehicles')">Vehicles</button>
-            <button onclick="toggleSection('incidents')">Incidents</button>
-            <button onclick="toggleSection('notes')">Notes</button>
+            <button onclick="mdt.toggleSection('citizens')">Citizens</button>
+            <button onclick="mdt.toggleSection('vehicles')">Vehicles</button>
+            <button onclick="mdt.toggleSection('incidents')">Incidents</button>
+            <button onclick="mdt.toggleSection('notes')">Notes</button>
         </nav>
 
         <main>
@@ -32,48 +65,86 @@
                 <h2>Citizens</h2>
                 <div class="search-bar">
                     <input type="text" id="citizenSearch" placeholder="Search citizen...">
-                    <button onclick="searchCitizen()">Search</button>
                 </div>
-                <div class="citizen-form">
-                    <input type="text" id="firstName" placeholder="First Name">
-                    <input type="text" id="lastName" placeholder="Last Name">
-                    <input type="text" id="dob" placeholder="Date of Birth">
-                    <input type="text" id="licenseNumber" placeholder="License Number">
-                    <button onclick="addCitizen()">Add Citizen</button>
-                </div>
+                <form id="citizen-form">
+                    <div class="form-group">
+                        <label>First Name:</label>
+                        <input type="text" id="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name:</label>
+                        <input type="text" id="lastName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Date of Birth:</label>
+                        <input type="date" id="dob" required>
+                    </div>
+                    <div class="form-group">
+                        <label>License Number:</label>
+                        <input type="text" id="licenseNumber" required>
+                    </div>
+                    <button type="submit">Save Citizen</button>
+                </form>
+                <div class="citizen-list"></div>
             </section>
 
             <section id="vehicles" class="section">
                 <h2>Vehicles</h2>
                 <div class="search-bar">
                     <input type="text" id="vehicleSearch" placeholder="Search vehicle...">
-                    <button onclick="searchVehicle()">Search</button>
                 </div>
-                <div class="vehicle-form">
-                    <input type="text" id="plateNumber" placeholder="Plate Number">
-                    <input type="text" id="make" placeholder="Make">
-                    <input type="text" id="model" placeholder="Model">
-                    <input type="text" id="color" placeholder="Color">
-                    <button onclick="addVehicle()">Add Vehicle</button>
-                </div>
+                <form id="vehicle-form">
+                    <div class="form-group">
+                        <label>Plate Number:</label>
+                        <input type="text" id="plateNumber" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Make:</label>
+                        <input type="text" id="make" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Model:</label>
+                        <input type="text" id="model" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Color:</label>
+                        <input type="text" id="color" required>
+                    </div>
+                    <button type="submit">Save Vehicle</button>
+                </form>
+                <div class="vehicle-list"></div>
             </section>
 
             <section id="incidents" class="section">
                 <h2>Incidents</h2>
-                <div class="incident-form">
-                    <input type="text" id="incidentType" placeholder="Incident Type">
-                    <input type="text" id="location" placeholder="Location">
-                    <textarea id="description" placeholder="Description"></textarea>
-                    <button onclick="addIncident()">Add Incident</button>
-                </div>
+                <form id="incident-form">
+                    <div class="form-group">
+                        <label>Incident Type:</label>
+                        <input type="text" id="incidentType" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Location:</label>
+                        <input type="text" id="location" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Description:</label>
+                        <textarea id="description" required></textarea>
+                    </div>
+                    <button type="submit">Save Incident</button>
+                </form>
+                <div class="incident-list"></div>
             </section>
 
             <section id="notes" class="section">
                 <h2>Notes</h2>
-                <div class="note-form">
-                    <textarea id="noteContent" placeholder="Enter note here..."></textarea>
-                    <button onclick="addNote()">Add Note</button>
-                </div>
+                <form id="note-form">
+                    <div class="form-group">
+                        <label>Note:</label>
+                        <textarea id="noteContent" required></textarea>
+                    </div>
+                    <button type="submit">Save Note</button>
+                </form>
+                <div class="note-list"></div>
             </section>
         </main>
     </div>
