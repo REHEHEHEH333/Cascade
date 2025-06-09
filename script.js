@@ -25,10 +25,90 @@ class MDT {
     }
 
     initializeEventListeners() {
-        document.addEventListener('DOMContentLoaded', () => {
-            this.setupAgencySelector();
-            this.setupSearchListeners();
-            this.setupFormSubmissions();
+        // Initialize all event listeners
+        this.setupAgencySelector();
+        this.setupSearchListeners();
+        this.setupFormSubmissions();
+        this.setupSectionToggle();
+        this.setupEditDeleteButtons();
+    }
+
+    setupAgencySelector() {
+        const agencySelect = document.getElementById('agencySelect');
+        if (agencySelect) {
+            agencySelect.addEventListener('change', () => {
+                this.updateAgencyTheme(agencySelect.value);
+            });
+        }
+    }
+
+    updateAgencyTheme(agency) {
+        const agencyData = this.data.agencies[agency];
+        document.documentElement.style.setProperty('--agency-color', agencyData.color);
+        document.documentElement.style.setProperty('--agency-code', agencyData.code);
+    }
+
+    setupSearchListeners() {
+        const searchInputs = document.querySelectorAll('.search-bar input');
+        searchInputs.forEach(input => {
+            input.addEventListener('input', (e) => {
+                const sectionId = e.target.closest('.search-bar').parentElement.id;
+                this.search(sectionId, e.target.value);
+            });
+        });
+    }
+
+    setupFormSubmissions() {
+        const forms = {
+            'citizen-form': this.handleCitizenForm,
+            'vehicle-form': this.handleVehicleForm,
+            'incident-form': this.handleIncidentForm,
+            'note-form': this.handleNoteForm
+        };
+
+        Object.entries(forms).forEach(([formId, handler]) => {
+            const form = document.getElementById(formId);
+            if (form) {
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    handler.call(this);
+                });
+            }
+        });
+    }
+
+    setupSectionToggle() {
+        const navButtons = document.querySelectorAll('nav button');
+        navButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const sectionId = e.target.textContent.toLowerCase();
+                this.toggleSection(sectionId);
+            });
+        });
+    }
+
+    toggleSection(sectionId) {
+        const sections = document.querySelectorAll('.section');
+        sections.forEach(section => {
+            section.classList.remove('active');
+        });
+        document.getElementById(sectionId).classList.add('active');
+    }
+
+    setupEditDeleteButtons() {
+        // Add event listeners for edit and delete buttons
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.matches('button')) {
+                const action = e.target.textContent.toLowerCase();
+                const id = e.target.closest('.card-actions').parentElement.dataset.id;
+                const section = e.target.closest('section').id;
+
+                if (action === 'edit') {
+                    this.handleEdit(section, id);
+                } else if (action === 'delete') {
+                    this.handleDelete(section, id);
+                }
+            }
         });
     }
 
@@ -77,10 +157,17 @@ class MDT {
     }
 
     handleCitizenForm() {
-        const citizen = this.createCitizenObject();
-        this.saveCitizen(citizen);
-        this.displayCitizen(citizen);
-        this.clearForm('citizen-form');
+        const form = document.getElementById('citizen-form');
+        const editing = form.dataset.editing;
+        
+        if (editing) {
+            this.editCitizen(editing);
+        } else {
+            const citizen = this.createCitizenObject();
+            this.saveCitizen(citizen);
+            this.displayCitizen(citizen);
+            this.clearForm('citizen-form');
+        }
     }
 
     createCitizenObject() {
@@ -93,6 +180,52 @@ class MDT {
             agency: document.getElementById('agencySelect').value,
             timestamp: new Date().toISOString()
         };
+    }
+
+    handleEdit(section, id) {
+        const formId = `${section}-form`;
+        const form = document.getElementById(formId);
+        const sectionData = this.data[section];
+        const item = sectionData.find(item => item.id === id);
+
+        if (item) {
+            // Populate form with existing data
+            Object.entries(item).forEach(([key, value]) => {
+                const input = document.getElementById(key);
+                if (input) {
+                    if (input.type === 'date') {
+                        input.value = value;
+                    } else if (input.type === 'textarea') {
+                        input.value = value;
+                    } else {
+                        input.value = value;
+                    }
+                }
+            });
+
+            // Add edit mode flag
+            form.dataset.editing = id;
+            form.querySelector('button[type="submit"]').textContent = 'Update';
+        }
+    }
+
+    handleDelete(section, id) {
+        if (confirm('Are you sure you want to delete this item?')) {
+            this.data[section] = this.data[section].filter(item => item.id !== id);
+            this.saveData();
+            this.refreshList(section);
+        }
+    }
+
+    refreshList(section) {
+        const list = document.getElementById(section).querySelector('.list');
+        if (list) {
+            list.innerHTML = '';
+            this.data[section].forEach(item => {
+                const element = this.createCard(section, item);
+                list.appendChild(element);
+            });
+        }
     }
 
     saveCitizen(citizen) {
